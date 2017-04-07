@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "newStorageAccountName": {
-      "value": "GEN-UNIQUE"
+      "value": "mygtstorageaccount001"
     },
     "adminUsername": {
       "value": "ubuntu"
@@ -12,7 +12,7 @@
       "value": "P4$$w0rd"
     },
     "dnsNameForPublicIP": {
-      "value": "GEN-UNIQUE"
+      "value": "mygadgetron002"
     }
   }
 }

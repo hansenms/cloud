@@ -214,7 +214,7 @@
 		    },
 		    "compose": {
 			"gadgetron" : {
-			    "image" : "[parameters('dockerImage']",
+			    "image" : "[parameters('dockerImage')]",
 			    "ports" : ["9001:9001", "9002:9002"]
 			}
 		    }

@@ -1,0 +1,3 @@
+Generate unique storage account name (from group name)
+Generate unique DNS name (from group name)
+Set up jenkins for template validation (https://www.microsoft.com/developerblog/real-life-code/2016/10/31/Automated-Azure-Template-Validations.html)
