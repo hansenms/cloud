@@ -57,7 +57,7 @@
 	    "defaultValue": "gadgetron/ubuntu_1604_no_cuda",
 	    "metadata": {
 		"description": "The docker image (with Gadgetron) to deploy"
-	    }
+	    },
 	    "allowedValues": [
 		"gadgetron/ubuntu_1604_no_cuda",
 		"gadgetron/ubuntu_1604_cuda75"
