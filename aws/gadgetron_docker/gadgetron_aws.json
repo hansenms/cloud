@@ -4,11 +4,12 @@
         "KeyName": {
             "Description": "The EC2 Key Pair to allow SSH access to the instance",
             "Type": "AWS::EC2::KeyPair::KeyName"
-        }
+        },
         "InstanceType": {
             "Type": "String",
             "Default": "c4.large",
             "AllowedValues":[
+		"c4.large",
 		"c4.xlarge",
                 "c4.2xlarge",
                 "c4.4xlarge",
@@ -87,7 +88,7 @@
                 "SecurityGroupIds" : [{ "Ref" : "gtCloudSecurityGroup" }],
                 "KeyName" : { "Ref" : "KeyName"},
                 "ImageId" : {"Ref" : "NodeAMI"},
-                "InstanceType" : { "Ref" : "RelayInstanceType"},
+                "InstanceType" : { "Ref" : "InstanceType"},
                 "SubnetId" : { "Ref" : "GadgetronSubnet" },
                 "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
                     "#!/bin/bash\n",
