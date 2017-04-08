@@ -2,12 +2,6 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-	"newStorageAccountName": {
-	    "type": "string",
-	    "metadata": {
-		"description": "Unique DNS Name for the Storage Account where the Virtual Machine's disks will be placed."
-	    }
-	},
 	"adminUsername": {
 	    "type": "string",
 	    "metadata": {
@@ -18,12 +12,6 @@
 	    "type": "securestring",
 	    "metadata": {
 		"description": "Password for the Virtual Machine."
-	    }
-	},
-	"dnsNameForPublicIP": {
-	    "type": "string",
-	    "metadata": {
-		"description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
 	    }
 	},
 	"ubuntuOSVersion": {
@@ -65,6 +53,9 @@
 	}
     },
     "variables": {
+	"newStorageAccountName": "[toLower(concat(replace(resourceGroup().name,'-',''),'sa'))]",
+	"dnsNameForPublicIP": "[toLower(concat('gt',resourceGroup().name))]",
+	"securityGroupName": "GadgetronNSG",
 	"imagePublisher": "Canonical",
 	"imageOffer": "UbuntuServer",
 	"OSDiskName": "osdiskfordockersimple",
@@ -84,9 +75,34 @@
     },
     "resources": [
 	{
+            "apiVersion": "2016-03-30",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('securityGroupName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH",
+                        "properties": {
+                            "description": "Allows SSH traffic",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+	},
+	
+	{
 	    "type": "Microsoft.Storage/storageAccounts",
-	    "name": "[parameters('newStorageAccountName')]",
-	    "apiVersion": "2015-05-01-preview",
+	    "name": "[variables('newStorageAccountName')]",
+	    "apiVersion": "2015-06-15",
 	    "location": "[resourceGroup().location]",
 	    "properties": {
 		"accountType": "[variables('storageAccountType')]"
@@ -100,7 +116,7 @@
 	    "properties": {
 		"publicIPAllocationMethod": "[variables('publicIPAddressType')]",
 		"dnsSettings": {
-		    "domainNameLabel": "[parameters('dnsNameForPublicIP')]"
+		    "domainNameLabel": "[variables('dnsNameForPublicIP')]"
 		}
 	    }
 	},
@@ -148,7 +164,10 @@
 			    }
 			}
 		    }
-		]
+		],
+		"networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('securityGroupName'))]"
+                }
 	    }
 	},
 	{
@@ -157,7 +176,7 @@
 	    "name": "[variables('vmName')]",
 	    "location": "[resourceGroup().location]",
 	    "dependsOn": [
-		"[concat('Microsoft.Storage/storageAccounts/', parameters('newStorageAccountName'))]",
+		"[concat('Microsoft.Storage/storageAccounts/', variables('newStorageAccountName'))]",
 		"[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
 	    ],
 	    "properties": {
@@ -179,7 +198,7 @@
 		    "osDisk": {
 			"name": "osdisk1",
 			"vhd": {
-			    "uri": "[concat('http://',parameters('newStorageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
+			    "uri": "[concat('http://',variables('newStorageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
 			},
 			"caching": "ReadWrite",
 			"createOption": "FromImage"

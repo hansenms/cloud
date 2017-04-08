@@ -2,17 +2,11 @@
   "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "newStorageAccountName": {
-      "value": "mygtstorageaccount001"
-    },
     "adminUsername": {
-      "value": "ubuntu"
+      "value": "gadgetron"
     },
     "adminPassword": {
       "value": "P4$$w0rd"
-    },
-    "dnsNameForPublicIP": {
-      "value": "mygadgetron002"
     }
   }
 }
