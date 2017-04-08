@@ -95,7 +95,7 @@
                     "wget https://raw.githubusercontent.com/hansenms/cloud/master/aws/gadgetron_docker/setup_ubuntu_1604_docker\n",
                     "chmod +x setup_ubuntu_1604_docker\n",
                     "./setup_ubuntu_1604_docker\n",
-		    "docker run --detach --name gadgetron -ti gadgetron/ubuntu_1604_no_cuda\n"
+		    "docker run --detach --name gadgetron --publish 9001:9001 --publish 9002:9002 -ti gadgetron/ubuntu_1604_no_cuda\n"
                 ]]}}
             }
         },
