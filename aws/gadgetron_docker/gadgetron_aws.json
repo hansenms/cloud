@@ -1,0 +1,151 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Parameters": {
+        "KeyName": {
+            "Description": "The EC2 Key Pair to allow SSH access to the instance",
+            "Type": "AWS::EC2::KeyPair::KeyName"
+        }
+        "InstanceType": {
+            "Type": "String",
+            "Default": "c4.large",
+            "AllowedValues":[
+		"c4.xlarge",
+                "c4.2xlarge",
+                "c4.4xlarge",
+                "c4.8xlarge"
+            ],
+            "Description": "Compute node instance type"
+        },
+        "NodeAMI": {
+            "Type": "String",
+            "Default": "ami-4dd2575b",
+            "Description": "Enter ami"
+        }
+    },
+    "Resources": {
+        "GadgetronVPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "EnableDnsSupport": "true",
+                "EnableDnsHostnames": "true",
+                "CidrBlock": "10.0.0.0/16"
+            }
+        },
+        "PublicRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "GadgetronVPC"
+                },
+                "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} } ]
+            }
+        },
+        "InternetGW": {
+            "Type": "AWS::EC2::InternetGateway",
+            "DependsOn": ["GadgetronVPC"],
+            "Properties" : {
+                "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} } ]
+            }
+        },
+        "GadgetronSubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "DependsOn": "GadgetronVPC",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "GadgetronVPC"
+                },
+                "CidrBlock": "10.0.0.0/24"
+            }
+        },
+        "Route": {
+            "Type": "AWS::EC2::Route",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                },
+                "GatewayId": {
+                    "Ref": "InternetGW"
+                },
+                "DestinationCidrBlock": "0.0.0.0/0"
+            },
+            "DependsOn": [
+                "IGWAttach"
+            ]
+        },
+        "RTBAssoc": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "DependsOn": ["GadgetronSubnet", "PublicRouteTable"],
+            "Properties": {
+                "SubnetId": { "Ref": "GadgetronSubnet" },
+                "RouteTableId": {"Ref": "PublicRouteTable"}
+            }
+        },
+        "GadgetronInstance" : {
+            "Type" : "AWS::EC2::Instance",
+            "DependsOn" : ["gtCloudSecurityGroup", "GadgetronSubnet"],
+            "Properties" : {
+                "SecurityGroupIds" : [{ "Ref" : "gtCloudSecurityGroup" }],
+                "KeyName" : { "Ref" : "KeyName"},
+                "ImageId" : {"Ref" : "NodeAMI"},
+                "InstanceType" : { "Ref" : "RelayInstanceType"},
+                "SubnetId" : { "Ref" : "GadgetronSubnet" },
+                "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
+                    "#!/bin/bash\n",
+                    "wget https://raw.githubusercontent.com/hansenms/cloud/master/aws/gadgetron_docker/setup_ubuntu_1604_docker\n",
+                    "chmod +x setup_ubuntu_1604_docker\n",
+                    "./setup_ubuntu_1604_docker\n",
+		    "docker run --detach --name gadgetron -ti gadgetron/ubuntu_1604_no_cuda\n"
+                ]]}}
+            }
+        },
+        "PublicIPAddress" : {
+            "Type" : "AWS::EC2::EIP",
+            "DependsOn" : ["IGWAttach", "GadgetronInstance"],
+            "Properties" : {
+                "InstanceId" : { "Ref" : "GadgetronInstance" },
+                "Domain" : "vpc"
+            }
+        },
+        "IGWAttach": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "DependsOn": ["InternetGW","GadgetronVPC"],
+            "Properties": {
+                "InternetGatewayId": {
+                    "Ref": "InternetGW"
+                },
+                "VpcId": {
+                    "Ref": "GadgetronVPC"
+                }
+            }
+        },
+        "SubnetRouteTableAssoc": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "DependsOn": ["PublicRouteTable", "GadgetronSubnet"],
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                },
+                "SubnetId": {
+                    "Ref": "GadgetronSubnet"
+                }
+            }
+        },
+        "gtCloudSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "GadgetronVPC"
+                },
+                "GroupDescription": "Allow access from SSH traffic",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ]
+            }
+        }
+    }
+}
