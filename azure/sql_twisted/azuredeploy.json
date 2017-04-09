@@ -61,7 +61,7 @@
 	"imageOffer": "UbuntuServer",
 	"OSDiskName": "osdiskfortwistedsimple",
 	"nicName": "VMNic",
-	"extensionName": "DockerExtension",
+	"extensionName": "CustomScriptExtension",
 	"addressPrefix": "10.0.0.0/16",
 	"subnetName": "Subnet",
 	"subnetPrefix": "10.0.0.0/24",
@@ -69,12 +69,12 @@
 	"publicIPAddressName": "twistedPublicIPD",
 	"publicIPAddressType": "Dynamic",
 	"vmStorageAccountContainerName": "vhds",
-	"vmName": "MyDockerVM",
+	"vmName": "MyTwistedVM",
 	"virtualNetworkName": "MyVNETD",
 	"vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
 	"subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
-	"sqlserverName": "[concat(toLower(resourceGroup().name),sql)]",
-	"databaseName": "[concat(toLower(resourceGroup().name),db)]"
+	"sqlserverName": "[concat(toLower(resourceGroup().name),'sql')]",
+	"databaseName": "[concat(toLower(resourceGroup().name),'db')]"
     },
     "resources": [
 	{
@@ -86,8 +86,8 @@
 	    },
 	    "apiVersion": "2014-04-01",
 	    "properties": {
-		"administratorLogin": "[parameters('sqlAdministratorLogin')]",
-		"administratorLoginPassword": "[parameters('sqlAdministratorLoginPassword')]",
+		"administratorLogin": "[parameters('sqlAdministratorUsername')]",
+		"administratorLoginPassword": "[parameters('sqlAdministratorPassword')]",
 		"version": "12.0"
 	    },
 	    "resources": [
@@ -146,14 +146,14 @@
                         },
 			"name": "WEB",
                         "properties": {
-                            "description": "Allows SSH traffic",
+                            "description": "Allows WEB traffic",
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "80",
                             "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "*",
                             "access": "Allow",
-                            "priority": 100,
+                            "priority": 110,
                             "direction": "Inbound"
                         }
                     }
@@ -277,15 +277,15 @@
 	},
 
 	{
-	    "name": "scriptextensiontwistedsetup",
-	    "type": "extensions",
+	    "type": "Microsoft.Compute/virtualMachines/extensions",
+	    "name": "[concat(variables('vmName'),'/', variables('extensionName'))]",
 	    "location": "[resourceGroup().location]",
 	    "apiVersion": "2015-06-15",
 	    "dependsOn": [
 		"[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
 	    ],
 	    "tags": {
-		"displayName": "scriptextensiontwistedsetup"
+		"displayName": "twistedsetup"
 	    },
 	    "properties": {
 		"publisher": "Microsoft.Azure.Extensions",
@@ -294,9 +294,9 @@
 		"autoUpgradeMinorVersion": true,
 		"settings": {
 		    "fileUris": [
-			"https://https://raw.githubusercontent.com/hansenms/cloud/master/azure/sql_twisted/setup_mssql_twisted"
+			"https://raw.githubusercontent.com/hansenms/cloud/master/azure/sql_twisted/setup_mssql_twisted"
 		    ],
-		    "commandToExecute": "bash setup_mssql_twisted"
+		    "commandToExecute": "ls -al"
 		}
 	    }
 	}

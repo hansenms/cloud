@@ -10,14 +10,13 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 apt-get update
-apt-get upgrade -y
-
 apt-get install -y python-pip python-twisted-web2
 
 curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
 curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list | sudo tee /etc/apt/sources.list.d/msprod.list
 
 apt-get update
+export DEBIAN_FRONTEND=noninteractive
 apt-get install -y mssql-tools unixodbc-dev
 pip install pyodbc==3.1.1
 
