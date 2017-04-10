@@ -1,0 +1,10 @@
+[Unit]
+Description=Simple Python MSSQL Twisted App
+After=syslog.target network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python /var/lib/sql_twisted/sqldb_app.py /var/lib/sql_twisted/config.json
+
+[Install]
+WantedBy=multi-user.target

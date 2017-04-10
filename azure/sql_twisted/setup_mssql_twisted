@@ -4,6 +4,12 @@
 #   - Setup mssql components on Linux
 #   - Install Python twisted
 
+DB_SERVER=$1
+DB_DB=$2
+DB_USER=$3
+DB_PASSWORD=$4
+
+DATA
 if [[ $EUID -ne 0 ]]; then
     echo "This script must be run with root privileges"
     exit 1
@@ -21,3 +27,18 @@ export ACCEPT_EULA=y
 apt-get install -y mssql-tools unixodbc-dev
 pip install pyodbc==3.1.1
 
+mkdir -p /var/lib/sql_twisted
+
+cp sqldb_app.py /var/lib/sql_twisted/
+cp sql_twisted.service /etc/systemd/system/
+
+cat > /var/lib/sql_twisted/config.json <<EOF
+{
+    "dbuser": "${DB_USER}",
+    "dbpasswd": "${DB_PASSWORD}",
+    "sqlserver": "${DB_SERVER}.database.windows.net",
+    "db": "${DB_DB}"
+}
+EOF
+
+systemctl start sql_twisted
