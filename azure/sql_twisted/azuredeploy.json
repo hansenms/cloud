@@ -74,7 +74,8 @@
 	"vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
 	"subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
 	"sqlserverName": "[concat(toLower(resourceGroup().name),'sql')]",
-	"databaseName": "[concat(toLower(resourceGroup().name),'db')]"
+	"databaseName": "[concat(toLower(resourceGroup().name),'db')]",
+	"singlequote": "'"
     },
     "resources": [
 	{
@@ -301,7 +302,7 @@
 			"https://raw.githubusercontent.com/hansenms/cloud/master/azure/sql_twisted/sql_twisted.service",
 			"https://raw.githubusercontent.com/hansenms/cloud/master/azure/sql_twisted/initial_db.sql"
 		    ],
-		    "commandToExecute": "[concat('bash setup_mssql_twisted ', variables('sqlserverName'), ' ', variables('databaseName'), ' ', parameters('sqlAdministratorUsername'), ' \"', parameters('sqlAdministratorPassword')), '\"']"
+		    "commandToExecute": "[concat('bash setup_mssql_twisted ', variables('sqlserverName'), ' ', variables('databaseName'), ' ', parameters('sqlAdministratorUsername'), ' ', variables('singlequote'), parameters('sqlAdministratorPassword')), variables('singlequote')]"
 		}
 	    }
 	}
