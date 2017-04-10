@@ -32,6 +32,8 @@ mkdir -p /var/lib/sql_twisted
 cp sqldb_app.py /var/lib/sql_twisted/
 cp sql_twisted.service /etc/systemd/system/
 
+/opt/mssql-tools/bin/sqlcmd -S ${DB_SERVER}.database.windows.net -U ${DB_USER}@${DB_SERVER} -P "${DB_PASSWORD}" -d ${DB_DB} -i initial_db.sql
+
 cat > /var/lib/sql_twisted/config.json <<EOF
 {
     "dbuser": "${DB_USER}",

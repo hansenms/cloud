@@ -298,9 +298,10 @@
 		    "fileUris": [
 			"https://raw.githubusercontent.com/hansenms/cloud/master/azure/sql_twisted/setup_mssql_twisted",
 			"https://raw.githubusercontent.com/hansenms/cloud/master/azure/sql_twisted/sqldb_app.py",
-			"https://raw.githubusercontent.com/hansenms/cloud/master/azure/sql_twisted/sql_twisted.service"
+			"https://raw.githubusercontent.com/hansenms/cloud/master/azure/sql_twisted/sql_twisted.service",
+			"https://raw.githubusercontent.com/hansenms/cloud/master/azure/sql_twisted/initial_db.sql"
 		    ],
-		    "commandToExecute": "[concat('bash setup_mssql_twisted ', variables('sqlserverName'), ' ', variables('databaseName'), ' ', parameters('sqlAdministratorUsername'), ' ', parameters('sqlAdministratorPassword'))]"
+		    "commandToExecute": "[concat('bash setup_mssql_twisted ', variables('sqlserverName'), ' ', variables('databaseName'), ' ', parameters('sqlAdministratorUsername'), ' \"', parameters('sqlAdministratorPassword')), '\"']"
 		}
 	    }
 	}
