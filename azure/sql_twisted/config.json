@@ -1,0 +1,6 @@
+{
+    "dbuser": "twisted",
+    "dbpasswd": "P4$$w0rd",
+    "sqlserver": "mytesterssql6sql.database.windows.net",
+    "db": "mytesterssql6db"
+}
