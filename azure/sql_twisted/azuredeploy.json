@@ -302,7 +302,7 @@
 			"https://raw.githubusercontent.com/hansenms/cloud/master/azure/sql_twisted/sql_twisted.service",
 			"https://raw.githubusercontent.com/hansenms/cloud/master/azure/sql_twisted/initial_db.sql"
 		    ],
-		    "commandToExecute": "[concat('bash setup_mssql_twisted ', variables('sqlserverName'), ' ', variables('databaseName'), ' ', parameters('sqlAdministratorUsername'), ' ', variables('singlequote'), parameters('sqlAdministratorPassword')), variables('singlequote')]"
+		    "commandToExecute": "[concat('bash setup_mssql_twisted ', variables('sqlserverName'), ' ', variables('databaseName'), ' ', parameters('sqlAdministratorUsername'), ' ', variables('singlequote'), parameters('sqlAdministratorPassword'), variables('singlequote'))]"
 		}
 	    }
 	}
