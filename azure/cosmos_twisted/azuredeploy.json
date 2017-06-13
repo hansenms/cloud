@@ -201,7 +201,7 @@
 	    "dependsOn": [
 		"[concat('Microsoft.Storage/storageAccounts/', variables('newStorageAccountName'))]",
 		"[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]",
-		"[concat('Microsoft.DocumentDb/databaseAccounts/', [variables('databaseName')])]"
+		"[concat('Microsoft.DocumentDb/databaseAccounts/', variables('databaseName'))]"
 	    ],
 	    "properties": {
 		"hardwareProfile": {
