@@ -1,0 +1,270 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+	"adminUsername": {
+	    "type": "string",
+	    "metadata": {
+		"description": "Username for the Virtual Machine."
+	    }
+	},
+	"adminPassword": {
+	    "type": "securestring",
+	    "metadata": {
+		"description": "Password for the Virtual Machine."
+	    }
+	},
+	"ubuntuOSVersion": {
+	    "type": "string",
+	    "defaultValue": "16.04.0-LTS",
+	    "metadata": {
+		"description": "The Ubuntu version for deploying the Docker containers. This will pick a fully patched image of this given Ubuntu version. Allowed values: 14.04.4-LTS, 15.10, 16.04.0-LTS"
+	    },
+	    "allowedValues": [
+		"14.04.4-LTS",
+		"15.10",
+		"16.04.0-LTS"
+	    ]
+	},
+	"vmSize": {
+	    "type": "string",
+	    "defaultValue": "Standard_DS1_v2",
+	    "metadata": {
+		"description": "The VM size for the Linux host"
+	    },
+	    "allowedValues": [
+		"Standard_DS1_v2",
+		"Standard_DS2_v2",
+		"Standard_DS3_v2",
+		"Standard_DS4_v2",
+		"Standard_DS5_v2"
+	    ]
+	}
+    },
+    "variables": {
+	"newStorageAccountName": "[toLower(concat(replace(resourceGroup().name,'-',''),'sa'))]",
+	"dnsNameForPublicIP": "[toLower(resourceGroup().name)]",
+	"securityGroupName": "NSG",
+	"imagePublisher": "Canonical",
+	"imageOffer": "UbuntuServer",
+	"OSDiskName": "osdiskfortwistedsimple",
+	"nicName": "VMNic",
+	"extensionName": "CustomScriptExtension",
+	"addressPrefix": "10.0.0.0/16",
+	"subnetName": "Subnet",
+	"subnetPrefix": "10.0.0.0/24",
+	"storageAccountType": "Standard_LRS",
+	"publicIPAddressName": "twistedPublicIPD",
+	"publicIPAddressType": "Dynamic",
+	"vmStorageAccountContainerName": "vhds",
+	"vmName": "MyTwistedVM",
+	"virtualNetworkName": "MyVNETD",
+	"vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
+	"subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
+	"sqlserverName": "[concat(toLower(resourceGroup().name),'sql')]",
+	"databaseName": "[concat(toLower(resourceGroup().name),'cosmosdb')]",
+	"singlequote": "'"
+    },
+    "resources": [
+	{
+	    "type": "Microsoft.DocumentDb/databaseAccounts",
+	    "kind": "MongoDB",
+	    "name": "[variables('databaseName')]",
+	    "apiVersion": "2015-04-08",
+	    "location": "[resourceGroup().location]",
+	    "properties": {
+		"databaseAccountOfferType": "Standard",
+		"locations": [
+		    {
+			"id": "[concat(variables('databaseName'), '-', resourceGroup().location)]",
+			"failoverPriority": 0,
+			"locationName": "[resourceGroup().location]"
+		    }
+		]
+	    }
+	},
+	{
+            "apiVersion": "2016-03-30",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('securityGroupName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH",
+                        "properties": {
+                            "description": "Allows SSH traffic",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+		    },
+		    {
+			"name": "WEB",
+                        "properties": {
+                            "description": "Allows WEB traffic",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "80",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+	},
+	
+	{
+	    "type": "Microsoft.Storage/storageAccounts",
+	    "name": "[variables('newStorageAccountName')]",
+	    "apiVersion": "2015-06-15",
+	    "location": "[resourceGroup().location]",
+	    "properties": {
+		"accountType": "[variables('storageAccountType')]"
+	    }
+	},
+	{
+	    "apiVersion": "2015-05-01-preview",
+	    "type": "Microsoft.Network/publicIPAddresses",
+	    "name": "[variables('publicIPAddressName')]",
+	    "location": "[resourceGroup().location]",
+	    "properties": {
+		"publicIPAllocationMethod": "[variables('publicIPAddressType')]",
+		"dnsSettings": {
+		    "domainNameLabel": "[variables('dnsNameForPublicIP')]"
+		}
+	    }
+	},
+	{
+	    "apiVersion": "2015-05-01-preview",
+	    "type": "Microsoft.Network/virtualNetworks",
+	    "name": "[variables('virtualNetworkName')]",
+	    "location": "[resourceGroup().location]",
+	    "properties": {
+		"addressSpace": {
+		    "addressPrefixes": [
+			"[variables('addressPrefix')]"
+		    ]
+		},
+		"subnets": [
+		    {
+			"name": "[variables('subnetName')]",
+			"properties": {
+			    "addressPrefix": "[variables('subnetPrefix')]"
+			}
+		    }
+		]
+	    }
+	},
+	{
+	    "apiVersion": "2015-05-01-preview",
+	    "type": "Microsoft.Network/networkInterfaces",
+	    "name": "[variables('nicName')]",
+	    "location": "[resourceGroup().location]",
+	    "dependsOn": [
+		"[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
+		"[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
+	    ],
+	    "properties": {
+		"ipConfigurations": [
+		    {
+			"name": "ipconfig1",
+			"properties": {
+			    "privateIPAllocationMethod": "Dynamic",
+			    "publicIPAddress": {
+				"id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+			    },
+			    "subnet": {
+				"id": "[variables('subnetRef')]"
+			    }
+			}
+		    }
+		],
+		"networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('securityGroupName'))]"
+                }
+	    }
+	},
+	{
+	    "apiVersion": "2015-05-01-preview",
+	    "type": "Microsoft.Compute/virtualMachines",
+	    "name": "[variables('vmName')]",
+	    "location": "[resourceGroup().location]",
+	    "dependsOn": [
+		"[concat('Microsoft.Storage/storageAccounts/', variables('newStorageAccountName'))]",
+		"[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]",
+		"[concat('Microsoft.DocumentDb/databaseAccounts/', [variables('databaseName')])]"
+	    ],
+	    "properties": {
+		"hardwareProfile": {
+		    "vmSize": "[parameters('vmSize')]"
+		},
+		"osProfile": {
+		    "computerName": "[variables('vmName')]",
+		    "adminUsername": "[parameters('adminUsername')]",
+		    "adminPassword": "[parameters('adminPassword')]"
+		},
+		"storageProfile": {
+		    "imageReference": {
+			"publisher": "[variables('imagePublisher')]",
+			"offer": "[variables('imageOffer')]",
+			"sku": "[parameters('ubuntuOSVersion')]",
+			"version": "latest"
+		    },
+		    "osDisk": {
+			"name": "osdisk1",
+			"vhd": {
+			    "uri": "[concat('http://',variables('newStorageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
+			},
+			"caching": "ReadWrite",
+			"createOption": "FromImage"
+		    }
+		},
+		"networkProfile": {
+		    "networkInterfaces": [
+			{
+			    "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+			}
+		    ]
+		}
+	    }
+	},
+
+	{
+	    "type": "Microsoft.Compute/virtualMachines/extensions",
+	    "name": "[concat(variables('vmName'),'/', variables('extensionName'))]",
+	    "location": "[resourceGroup().location]",
+	    "apiVersion": "2015-06-15",
+	    "dependsOn": [
+		"[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
+	    ],
+	    "tags": {
+		"displayName": "twistedsetup"
+	    },
+	    "properties": {
+		"publisher": "Microsoft.Azure.Extensions",
+		"type": "CustomScript",
+		"typeHandlerVersion": "2.0",
+		"autoUpgradeMinorVersion": true,
+		"settings": {
+		    "fileUris": [
+			"https://raw.githubusercontent.com/hansenms/cloud/master/azure/sql_twisted/setup_cosmos_twisted",
+			"https://raw.githubusercontent.com/hansenms/cloud/master/azure/sql_twisted/cosmos_app.py",
+			"https://raw.githubusercontent.com/hansenms/cloud/master/azure/sql_twisted/cosmos_twisted.service",
+			"https://raw.githubusercontent.com/hansenms/cloud/master/azure/sql_twisted/initialize_cosmos.py"
+		    ],
+		    "commandToExecute": "[concat('bash setup_cosmos_twisted ', listConnectionStrings('Microsoft.DocumentDb/databaseAccounts/hansenms', providers('Microsoft.DocumentDb', 'databaseAccounts').apiVersions[0]).connectionStrings[0].connectionString)]"
+		}
+	    }
+	}
+    ]
+}
+

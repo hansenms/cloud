@@ -1,0 +1,10 @@
+[Unit]
+Description=Simple Python CosmosDB Twisted App
+After=syslog.target network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python /var/lib/cosmos_twisted/cosmos_app.py /var/lib/cosmos_twisted/config.json
+
+[Install]
+WantedBy=multi-user.target
