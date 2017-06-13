@@ -261,7 +261,7 @@
 			"https://raw.githubusercontent.com/hansenms/cloud/master/azure/sql_twisted/cosmos_twisted.service",
 			"https://raw.githubusercontent.com/hansenms/cloud/master/azure/sql_twisted/initialize_cosmos.py"
 		    ],
-		    "commandToExecute": "[concat('bash setup_cosmos_twisted ', listConnectionStrings('Microsoft.DocumentDb/databaseAccounts/hansenms', providers('Microsoft.DocumentDb', 'databaseAccounts').apiVersions[0]).connectionStrings[0].connectionString)]"
+		    "commandToExecute": "[concat('bash setup_cosmos_twisted ', listConnectionStrings(concat('Microsoft.DocumentDb/databaseAccounts/', variables('databaseName')), providers('Microsoft.DocumentDb', 'databaseAccounts').apiVersions[0]).connectionStrings[0].connectionString)]"
 		}
 	    }
 	}
