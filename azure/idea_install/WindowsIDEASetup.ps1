@@ -54,11 +54,10 @@ Start-BitsTransfer -source "https://ideainstallation.blob.core.windows.net/insta
 $env:chocolateyUseWindowsCompression = 'true'
 iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 cinst -y imdisk
-$driveLetter = ls function:[i-z]: -n | ?{ !(test-path $_) } | random
-imdisk a -f .\vstudio2008.iso -m $driveletter
+imdisk a -f .\vstudio2008.iso -m "f:"
 
 
-%$driveletter\Setup\setup.exe /?
+#$driveletter\Setup\setup.exe /?
 
 
 
