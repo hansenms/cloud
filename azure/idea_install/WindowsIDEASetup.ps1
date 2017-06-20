@@ -51,6 +51,7 @@ $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";"
 
 choco install -y googlechrome
 choco install -y wincemu
+choco install -y putty
 
 
 Disable-UserAccessControl
