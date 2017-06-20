@@ -41,21 +41,27 @@ function Disable-UserAccessControl {
 }
 
 
+
+iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+
+choco install -y wget
+choco install -y imdisk
+choco install -y git
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User") 
+
+choco install -y googlechrome
+
+
+wget "https://ideainstallation.blob.core.windows.net/install/vstudio2008.iso"
+imdisk -a -f .\vstudio2008.iso -m "f:"
+
+
 Disable-UserAccessControl
 
 Disable-InternetExplorerESC
 
 Import-Module ServerManager
 Add-WindowsFeature as-net-framework
-
-Import-Module BitsTransfer
-Start-BitsTransfer -source "https://ideainstallation.blob.core.windows.net/install/vstudio2008.iso"
-
-$env:chocolateyUseWindowsCompression = 'true'
-iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-cinst -y imdisk
-imdisk a -f .\vstudio2008.iso -m "f:"
-
 
 #$driveletter\Setup\setup.exe /?
 
