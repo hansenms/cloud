@@ -50,10 +50,7 @@ choco install -y git
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User") 
 
 choco install -y googlechrome
-
-
-wget "https://ideainstallation.blob.core.windows.net/install/vstudio2008.iso"
-imdisk -a -f .\vstudio2008.iso -m "f:"
+choco install -y wincemu
 
 
 Disable-UserAccessControl
@@ -62,8 +59,4 @@ Disable-InternetExplorerESC
 
 Import-Module ServerManager
 Add-WindowsFeature as-net-framework
-
-#$driveletter\Setup\setup.exe /?
-
-
 
