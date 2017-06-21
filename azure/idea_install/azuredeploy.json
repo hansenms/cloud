@@ -41,7 +41,7 @@
 	"subnetName": "Subnet",
 	"subnetPrefix": "10.0.0.0/24",
 	"publicIPAddressName": "myPublicIP",
-	"vmName": "SimpleWinVM",
+	"vmName": "IDEAWinVM",
 	"virtualNetworkName": "MyVNET",
 	"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
     },
@@ -168,17 +168,17 @@
 	    }
 	},
         {
-            "type": "extensions",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "CustomScriptExtension",
             "apiVersion": "2015-06-15",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[variables('vmName')]"
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
             ],
             "properties": {
-                "publisher": "Microsoft.Compute",
-                "type": "CustomScriptExtension",
-                "typeHandlerVersion": "1.8",
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
