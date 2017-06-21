@@ -165,29 +165,31 @@
 			"storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))).primaryEndpoints.blob]"
 		    }
 		}
-	    }
-	},
-        {
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(variables('vmName'), '/CustomScriptExtension')]",
-            "apiVersion": "2015-06-15",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
-            ],
-            "properties": {
-                "publisher": "Microsoft.Azure.Extensions",
-                "type": "CustomScript",
-                "typeHandlerVersion": "2.0",
-                "autoUpgradeMinorVersion": true,
-                "settings": {
-                    "fileUris": [
-                        "https://raw.githubusercontent.com/hansenms/cloud/master/azure/idea_install/WindowsIDEASetup.ps1"
+	    },
+            "resources": [
+                {
+                    "type": "extensions",
+                    "name": "CustomScriptExtension",
+                    "apiVersion": "2015-06-15",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[variables('vmName')]"
                     ],
-                    "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File ./WindowsIDEASetup.ps1"
+                    "properties": {
+                        "publisher": "Microsoft.Compute",
+                        "type": "CustomScriptExtension",
+                        "typeHandlerVersion": "1.8",
+                        "autoUpgradeMinorVersion": true,
+                        "settings": {
+                            "fileUris": [
+                                "https://raw.githubusercontent.com/hansenms/cloud/master/azure/idea_install/WindowsIDEASetup.ps1"
+                            ],
+                            "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File ./WindowsIDEASetup.ps1"
+                        }
+                    }
                 }
-            }
-        }	
+             ]
+	}	
     ],
     "outputs": {
 	"hostname": {
