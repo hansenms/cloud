@@ -14,12 +14,6 @@
 		"description": "Password for the Virtual Machine."
 	    }
 	},
-	"dnsLabelPrefix": {
-	    "type": "string",
-	    "metadata": {
-		"description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
-	    }
-	},
 	"windowsVmSize": {
 	    "type": "string",
 	    "defaultValue": "Standard_DS2_v2",
@@ -65,7 +59,7 @@
 	    "properties": {
 		"publicIPAllocationMethod": "Dynamic",
 		"dnsSettings": {
-		    "domainNameLabel": "[parameters('dnsLabelPrefix')]"
+		    "domainNameLabel": "[concat(toLower(resourceGroup().name), '-win')]"
 		}
 	    }
 	},
