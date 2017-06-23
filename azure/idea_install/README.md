@@ -14,9 +14,13 @@ This deployment sets up a Windows VM and a Linux VM ready for installing Siemens
 * Install Windows SDK from http://www.microsoft.com/download/en/details.aspx?id=11310. Use install path `C:\WinSDK\Windows\v6.1`.
 * The IDEA installation from the iso image
 
-WinCDEmu is install, which should allow you to mount iso files with Visual Studio and the IDEA environment. 
+`imdisk` is installed, which should allow you to mount iso files with Visual Studio and the IDEA environment. You can open a shell and type something like:
 
-The Windows VM also has Chrome, git, and other useful tools installed. [Chocolatey](https://chocolatey.org) is also installed and can be used to add more packages. 
+```
+imdisk -a -f "c:\file.iso" -m "F:"
+```
+
+The Windows VM also has Chrome, git, and other useful tools installed. [Chocolatey](https://chocolatey.org) is also installed and can be used to add more packages (including WinCDEmu if you are more comfortable with that for mounting disks). 
   
 
 Connecting the Windows and MARS machines
