@@ -34,7 +34,6 @@ choco install -y git
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 choco install -y googlechrome
 choco install -y wincdemu
-choco install -y putty
 
 Disable-UserAccessControl
 
