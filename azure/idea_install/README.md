@@ -10,8 +10,8 @@ Installation of IDEA on Azure
 
 This deployment sets up a Windows VM and a Linux VM ready for installing Siemens IDEA sequence and reconstruction development. After deployment is complete, the Windows VM will still need the following installed:
 
-* Install Visual Studio 2008 to C:\MSVS2008.
-* Install Windows SDK from http://www.microsoft.com/download/en/details.aspx?id=11310. Use install path C:\WinSDK\Windows\v6.1.
+* Install Visual Studio 2008 to `C:\MSVS2008`.
+* Install Windows SDK from http://www.microsoft.com/download/en/details.aspx?id=11310. Use install path `C:\WinSDK\Windows\v6.1`.
 * The IDEA installation from the iso image
 
 WinCDEmu is install, which should allow you to mount iso files with Visual Studio and the IDEA environment. 
