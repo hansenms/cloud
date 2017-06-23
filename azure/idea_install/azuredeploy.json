@@ -42,7 +42,6 @@
     },
     "variables": {
 	"windowsOSVersion": "2008-R2-SP1",
-	"storageAccountName": "[concat(uniquestring(resourceGroup().id), 'sawinvm')]",
 	"nicName": "windowsVMNic",
 	"marsNicName": "marsVMNic",
         "marsNetworkSecurityGroupName": "marsNSG",
@@ -58,17 +57,6 @@
 	"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
     },
     "resources": [
-	{
-	    "type": "Microsoft.Storage/storageAccounts",
-	    "name": "[variables('storageAccountName')]",
-	    "apiVersion": "2016-01-01",
-	    "location": "[resourceGroup().location]",
-	    "sku": {
-		"name": "Standard_LRS"
-	    },
-	    "kind": "Storage",
-	    "properties": {}
-	},
 	{
 	    "apiVersion": "2016-03-30",
 	    "type": "Microsoft.Network/publicIPAddresses",
@@ -176,7 +164,6 @@
 	    "name": "[variables('vmName')]",
 	    "location": "[resourceGroup().location]",
 	    "dependsOn": [
-		"[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
 		"[resourceId('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
 	    ],
 	    "properties": {
