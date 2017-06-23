@@ -245,7 +245,7 @@
             "location": "[resourceGroup().location]",
             "properties": {
                 "osProfile": {
-                    "computerName": "[parameters('marsVmName')]",
+                    "computerName": "[variables('marsVmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]"
                 },
