@@ -43,8 +43,8 @@
     "variables": {
 	"windowsOSVersion": "2008-R2-SP1",
 	"storageAccountName": "[concat(uniquestring(resourceGroup().id), 'sawinvm')]",
-	"nicName": "myVMNic",
-	"marsNicName": "myVMNic",
+	"nicName": "windowsVMNic",
+	"marsNicName": "marsVMNic",
         "marsNetworkSecurityGroupName": "marsNSG",
 	"extensionName": "CustomScriptExtension",
 	"addressPrefix": "10.0.0.0/16",
@@ -85,7 +85,7 @@
             "type": "Microsoft.Network/publicIpAddresses",
             "name": "[variables('marsPublicIpAddressName')]",
             "apiVersion": "2016-09-01",
-            "location": "[parameters('location')]",
+            "location": "[resourceGroup().location]",
             "properties": {
                 "publicIpAllocationMethod": "Dynamic",
 		"dnsSettings": {
@@ -217,7 +217,7 @@
             "resources": [
                 {
                     "type": "extensions",
-                    "name": "CustomScriptExtension",
+                    "name": "windowsCustomScriptExtension",
                     "apiVersion": "2015-06-15",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [
@@ -240,7 +240,7 @@
 	},
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[parameters('virtualMachineName')]",
+            "name": "[variables('marsVmName')]",
             "apiVersion": "2016-04-30-preview",
             "location": "[resourceGroup().location]",
             "properties": {
@@ -267,18 +267,18 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('marsNicName'))]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('marsNicName'))]"
                         }
                     ]
                 }
             },
             "dependsOn": [
-                "[concat('Microsoft.Network/networkInterfaces/', parameters('marsNicName'))]"
+                "[concat('Microsoft.Network/networkInterfaces/', variables('marsNicName'))]"
             ]
         },
 	{
 	    "type": "Microsoft.Compute/virtualMachines/extensions",
-	    "name": "[concat(variables('vmName'),'/', variables('extensionName'))]",
+	    "name": "[concat(variables('marsVmName'),'/', variables('extensionName'))]",
 	    "location": "[resourceGroup().location]",
 	    "apiVersion": "2015-06-15",
 	    "dependsOn": [
@@ -305,7 +305,7 @@
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('marsNetworkSecurityGroupName')]",
             "apiVersion": "2016-09-01",
-            "location": "[resourceGroup().name]",
+            "location": "[resourceGroup().location]",
             "properties": {
                 "securityRules": [
                     {
