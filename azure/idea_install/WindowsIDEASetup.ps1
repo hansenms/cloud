@@ -7,6 +7,6 @@ $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";"
 choco install -y googlechrome
 choco install -y wincdemu
 
-Import-Module ServerManager
-Add-WindowsFeature as-net-framework
+#Import-Module ServerManager
+#Add-WindowsFeature as-net-framework
 
