@@ -47,11 +47,11 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/in
 choco install -y wget
 choco install -y imdisk
 choco install -y git
-$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User") 
-
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 choco install -y googlechrome
-choco install -y wincemu
+choco install -y wincdemu
 choco install -y putty
+choco install -y windows-sdk-6.1 --install-directory 'C:\WinSDK\Windows\v6.1'
 
 
 Disable-UserAccessControl

@@ -23,7 +23,20 @@
 	    "allowedValues": [
 		"Standard_DS2_v2",
 		"Standard_DS3_v2",
-		"Standard_DS4_v4"
+		"Standard_DS4_v2"
+	    ]
+	},
+	"marsVmSize": {
+	    "type": "string",
+	    "defaultValue": "Standard_DS2_v2",
+	    "metadata": {
+		"description": "The VM size for the Windows host"
+	    },
+	    "allowedValues": [
+		"Standard_DS2_v2",
+		"Standard_DS3_v2",
+		"Standard_DS4_v2",
+                "Standard_DS5_v2"
 	    ]
 	}
     },
@@ -31,11 +44,16 @@
 	"windowsOSVersion": "2008-R2-SP1",
 	"storageAccountName": "[concat(uniquestring(resourceGroup().id), 'sawinvm')]",
 	"nicName": "myVMNic",
+	"marsNicName": "myVMNic",
+        "marsNetworkSecurityGroupName": "marsNSG",
+	"extensionName": "CustomScriptExtension",
 	"addressPrefix": "10.0.0.0/16",
 	"subnetName": "Subnet",
 	"subnetPrefix": "10.0.0.0/24",
-	"publicIPAddressName": "myPublicIP",
+	"publicIPAddressName": "WindowsPublicIP",
+	"marsPublicIPAddressName": "MarsPublicIP",
 	"vmName": "IDEAWinVM",
+        "marsVmName": "mars",
 	"virtualNetworkName": "MyVNET",
 	"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
     },
@@ -63,6 +81,19 @@
 		}
 	    }
 	},
+        {
+            "type": "Microsoft.Network/publicIpAddresses",
+            "name": "[variables('marsPublicIpAddressName')]",
+            "apiVersion": "2016-09-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "publicIpAllocationMethod": "Dynamic",
+		"dnsSettings": {
+		    "domainNameLabel": "[concat(toLower(resourceGroup().name), '-mars')]"
+		}
+
+            }
+        },
 	{
 	    "apiVersion": "2016-03-30",
 	    "type": "Microsoft.Network/virtualNetworks",
@@ -110,6 +141,35 @@
 		]
 	    }
 	},
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('marsNicName')]",
+            "apiVersion": "2016-09-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIpAddress": {
+                                "id": "[resourceId(resourceGroup().name,'Microsoft.Network/publicIpAddresses', variables('marsPublicIpAddressName'))]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', variables('marsNetworkSecurityGroupName'))]"
+                }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Network/publicIpAddresses/', variables('marsPublicIpAddressName'))]",
+                "[concat('Microsoft.Network/networkSecurityGroups/', variables('marsNetworkSecurityGroupName'))]"
+            ]
+        },
 	{
 	    "apiVersion": "2016-04-30-preview",
 	    "type": "Microsoft.Compute/virtualMachines",
@@ -152,12 +212,6 @@
 			    "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
 			}
 		    ]
-		},
-		"diagnosticsProfile": {
-		    "bootDiagnostics": {
-			"enabled": "true",
-			"storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))).primaryEndpoints.blob]"
-		    }
 		}
 	    },
             "resources": [
@@ -183,12 +237,102 @@
                     }
                 }
              ]
-	}	
+	},
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[parameters('virtualMachineName')]",
+            "apiVersion": "2016-04-30-preview",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "osProfile": {
+                    "computerName": "[parameters('marsVmName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "[parameters('marsVmSize')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "12.04.5-LTS",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "fromImage"
+                    },
+                    "dataDisks": []
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('marsNicName'))]"
+                        }
+                    ]
+                }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', parameters('marsNicName'))]"
+            ]
+        },
+	{
+	    "type": "Microsoft.Compute/virtualMachines/extensions",
+	    "name": "[concat(variables('vmName'),'/', variables('extensionName'))]",
+	    "location": "[resourceGroup().location]",
+	    "apiVersion": "2015-06-15",
+	    "dependsOn": [
+		"[concat('Microsoft.Compute/virtualMachines/', variables('marsVmName'))]"
+	    ],
+	    "tags": {
+		"displayName": "marssetup"
+	    },
+	    "properties": {
+		"publisher": "Microsoft.Azure.Extensions",
+		"type": "CustomScript",
+		"typeHandlerVersion": "2.0",
+		"autoUpgradeMinorVersion": true,
+		"settings": {
+		    "fileUris": [
+			"https://raw.githubusercontent.com/hansenms/cloud/master/azure/idea_install/pcks.txt",
+                        "https://raw.githubusercontent.com/hansenms/cloud/master/azure/idea_install/setup_mars.sh"                        
+		    ],
+		    "commandToExecute": "bash ./setup_mars.sh pcks.txt"
+		}
+	    }
+	},
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('marsNetworkSecurityGroupName')]",
+            "apiVersion": "2016-09-01",
+            "location": "[resourceGroup().name]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "default-allow-ssh",
+                        "properties": {
+                            "priority": 1000,
+                            "sourceAddressPrefix": "*",
+                            "protocol": "TCP",
+                            "destinationPortRange": "22",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*"
+                        }
+                    }
+                ]
+            }
+        }
     ],
     "outputs": {
-	"hostname": {
+	"windowsHostname": {
 	    "type": "string",
 	    "value": "[reference(variables('publicIPAddressName')).dnsSettings.fqdn]"
+	},
+	"marsHostname": {
+	    "type": "string",
+	    "value": "[reference(variables('marsPublicIPAddressName')).dnsSettings.fqdn]"
 	}
     }
 }
